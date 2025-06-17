@@ -18,7 +18,7 @@ FULL_URI = f'{DB_URI}/{DB_NAME}'
 
 
 if __name__ == "__main__":
-    connection = pymysql.connect(host="sparq-api-server.mysql.database.azure.com", user="ikashaieod", password="FnDzq1dFsoi$5ROt", charset="utf8mb4", cursorclass=pymysql.cursors.DictCursor, ssl={arrumar})
+    connection = pymysql.connect(host="sparq-api-server.mysql.database.azure.com", user=DB_USER, password=DB_PASSWORD, charset="utf8mb4", cursorclass=pymysql.cursors.DictCursor, ssl={arrumar})
     # Conexão com SSL ativado mas sem certificação. Vulnerável a ataques MITM ^
 
     exists = False
