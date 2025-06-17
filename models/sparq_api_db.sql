@@ -1,3 +1,5 @@
+CREATE DATABASE 'sparq-api-database';
+
 USE `sparq-api-database`;
 
 CREATE TABLE Reading(

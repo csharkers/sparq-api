@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 
@@ -10,7 +11,7 @@ class Reading(db.Model):
     temp = db.Column(db.Integer) # Celsius
     humi = db.Column(db.Integer) # Apesar de ser decimal, é mais conveniente armazenar como Int e transpor a virgula
     carb = db.Column(db.Integer) # Mesma coisa
-    dateserver = db.Column(db.DateTime(), server_default=func.now())
+    dateserver = db.Column(db.DateTime(), default=datetime.now())
     #datehard = db.Column(db.Datetime()) # Tempo logado pelo ESP
 
     def __init__(self, sens_id, temp, humi, carb):
