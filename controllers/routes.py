@@ -3,7 +3,8 @@ from models.sparq_api_db import Reading, db
 
 def init_app(app):
     @app.route('/readings', methods=['GET', 'POST'])
-    @app.route('/readings/<int:qnt>/<int:sens_id>') #Especifica a quantidade de leituras a se puxar
+    @app.route('/readings/<int:qnt>', methods=['GET'])
+    @app.route('/readings/<int:qnt>/<int:sens_id>', methods=['GET']) #Especifica a quantidade de leituras a se puxar
     def readings(qnt = 1, sens_id = -1): #Padrão é retornar 1 leitura, a última.
         if(request.method == "POST"):
             newReading = Reading(

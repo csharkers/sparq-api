@@ -1,4 +1,4 @@
-CREATE DATABASE 'sparq-api-database';
+CREATE DATABASE `sparq-api-database`;
 
 USE `sparq-api-database`;
 
