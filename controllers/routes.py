@@ -3,31 +3,51 @@ from models.sparq_api_db import Reading, db
 
 def init_app(app):
     @app.route('/readings', methods=['GET', 'POST'])
-    @app.route('/readings/<int:qnt>', methods=['GET'])
-    @app.route('/readings/<int:qnt>/<int:sens_id>', methods=['GET']) #Especifica a quantidade de leituras a se puxar
-    def readings(qnt = 1, sens_id = -1): #Padrão é retornar 1 leitura, a última.
-        if(request.method == "POST"):
-            newReading = Reading(
-                int(request.form['sens_id']),
-                int(request.form['temp']),
-                int(request.form['humi']),
-                int(request.form['carb']),
-                #request.form['datehard'] # Data de hardware - do ESP.
-            )
-            db.session.add(newReading)
-            db.session.commit()
-            return "Success", 201
+    @app.route('/readings/<int:qnt>', methods=['GET']) #Especifica a quantidade de leituras a se puxar
+    @app.route('/readings/<int:qnt>/<int:sens_id>', methods=['GET']) #Especifica a quantidade de leituras a se puxar de um sensor
+    def readings(qnt = 0, sens_id = -1): #Padrão é retornar 1 leitura, a última.
+        if request.method == "POST":
+            data = request.get_json()
+
+            if not data:
+                return jsonify({"error": "Invalid or missing JSON body"}), 400
+
+            try:
+                newReading = Reading(
+                    sens_id=int(data['sens_id']),
+                    temp=int(data['temp']),
+                    humi=int(data['humi']),
+                    carb=int(data['carb']),
+                    sens_name=data.get('sensor_name'),
+                    thermo_mat=data.get('thermo_mat')  # Espera-se uma lista 8x8 de floats (oq a AMG retorna)
+                )
+
+                db.session.add(newReading)
+                db.session.commit()
+                return jsonify({"message": "Success"}), 201
+
+            except (KeyError, ValueError, TypeError) as e:
+                return jsonify({"error": f"Missing or invalid field: {e}"}), 400
         else:
             query = Reading.query.order_by(Reading.dateserver.desc())
+
+            #Se for -1, retorna absolutamente todos os registros
+            #Se for 0, 
 
             if sens_id != -1:
                 query = query.filter_by(sens_id=sens_id)
 
-            results = query.limit(qnt).all()
+            if qnt > 0:
+                query = query.order_by(Reading.id.desc()).limit(qnt)
+            elif qnt == 0:
+                query = query.order_by(Reading.id.desc())  # retorna todas sem limitar
+
+            results = query.all()
             results = list(reversed(results))
 
             readings_list = [{
                 "id": r.id,
+                "sens_name": r.sens_name,
                 "sens_id": r.sens_id,
                 "temp": r.temp,
                 "humi": r.humi,
