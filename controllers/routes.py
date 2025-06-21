@@ -54,17 +54,17 @@ def init_app(app):
                 results = query.all()
                 results = list(reversed(results))
 
-                readings_list = [{
-                    "id": r.id,
-                    "sens_name": r.sens_name,
-                    "sens_id": r.sens_id,
-                    "temp": r.temp,
-                    "humi": r.humi,
-                    "carb": r.carb,
-                    "dateserver": r.dateserver.isoformat() if r.dateserver else None
-                } for r in results]
+            readings_list = [{
+                "id": r.id,
+                "sens_name": r.sens_name,
+                "sens_id": r.sens_id,
+                "temp": r.temp,
+                "humi": r.humi,
+                "carb": r.carb,
+                "dateserver": r.dateserver.isoformat() if r.dateserver else None
+            } for r in results]
 
-                return jsonify(readings_list), 200
+            return jsonify(readings_list), 200
 
             # DEBUG DEBUG DEBUG DEBUG DEV TEST START
             # newReading = Reading(
