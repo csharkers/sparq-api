@@ -1,11 +1,13 @@
 from flask import request, jsonify
 from models.sparq_api_db import Reading, db
+from sqlalchemy.orm import aliased
+from sqlalchemy import func
 
 def init_app(app):
     @app.route('/readings', methods=['GET', 'POST'])
     @app.route('/readings/<int:qnt>', methods=['GET']) #Especifica a quantidade de leituras a se puxar
     @app.route('/readings/<int:qnt>/<int:sens_id>', methods=['GET']) #Especifica a quantidade de leituras a se puxar de um sensor
-    def readings(qnt = 0, sens_id = -1): #Padrão é retornar 1 leitura, a última.
+    def readings(qnt = -1, sens_id = -1): #Padrão é retornar 1 leitura, a última.
         if request.method == "POST":
             data = request.get_json()
 
@@ -29,33 +31,40 @@ def init_app(app):
             except (KeyError, ValueError, TypeError) as e:
                 return jsonify({"error": f"Missing or invalid field: {e}"}), 400
         else:
-            query = Reading.query.order_by(Reading.dateserver.desc())
+            if qnt == -1:
+                # Get most recent reading per sens_id
+                subquery = db.session.query(
+                    func.max(Reading.id).label('max_id')
+                ).group_by(Reading.sens_id).subquery()
 
-            #Se for -1, retorna absolutamente todos os registros
-            #Se for 0, 
+                # Join to Reading table to get full rows
+                results = Reading.query.filter(Reading.id.in_(subquery)).order_by(Reading.sens_id).all()
+            else:
 
-            if sens_id != -1:
-                query = query.filter_by(sens_id=sens_id)
+                query = Reading.query.order_by(Reading.dateserver.desc())
 
-            if qnt > 0:
-                query = query.order_by(Reading.id.desc()).limit(qnt)
-            elif qnt == 0:
-                query = query.order_by(Reading.id.desc())  # retorna todas sem limitar
+                if sens_id != -1:
+                    query = query.filter_by(sens_id=sens_id)
 
-            results = query.all()
-            results = list(reversed(results))
+                if qnt > 0:
+                    query = query.order_by(Reading.id.desc()).limit(qnt)
+                elif qnt == 0:
+                    query = query.order_by(Reading.id.desc())  # retorna todas sem limitar
 
-            readings_list = [{
-                "id": r.id,
-                "sens_name": r.sens_name,
-                "sens_id": r.sens_id,
-                "temp": r.temp,
-                "humi": r.humi,
-                "carb": r.carb,
-                "dateserver": r.dateserver.isoformat() if r.dateserver else None
-            } for r in results]
+                results = query.all()
+                results = list(reversed(results))
 
-            return jsonify(readings_list), 200
+                readings_list = [{
+                    "id": r.id,
+                    "sens_name": r.sens_name,
+                    "sens_id": r.sens_id,
+                    "temp": r.temp,
+                    "humi": r.humi,
+                    "carb": r.carb,
+                    "dateserver": r.dateserver.isoformat() if r.dateserver else None
+                } for r in results]
+
+                return jsonify(readings_list), 200
 
             # DEBUG DEBUG DEBUG DEBUG DEV TEST START
             # newReading = Reading(
