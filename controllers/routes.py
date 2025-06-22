@@ -20,7 +20,7 @@ def init_app(app):
                     temp=int(data['temp']),
                     humi=int(data['humi']),
                     carb=int(data['carb']),
-                    sens_name=data.get('sensor_name'),
+                    sens_name=data.get('sens_name'),
                     thermo_mat=data.get('thermo_mat')  # Espera-se uma lista 8x8 de floats (oq a AMG retorna)
                 )
 
