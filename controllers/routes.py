@@ -2,6 +2,7 @@ from flask import request, jsonify
 from models.sparq_api_db import Reading, db
 from sqlalchemy.orm import aliased
 from sqlalchemy import func
+import json
 
 def init_app(app):
     @app.route('/readings', methods=['GET', 'POST'])
@@ -54,16 +55,23 @@ def init_app(app):
                 results = query.all()
                 results = list(reversed(results))
 
-            readings_list = [{
-                "id": r.id,
-                "sens_name": r.sens_name,
-                "sens_id": r.sens_id,
-                "temp": r.temp,
-                "humi": r.humi,
-                "carb": r.carb,
-                "dateserver": r.dateserver.isoformat() if r.dateserver else None,
-                "thermo_mat": json.loads(r.thermo_mat) if r.thermo_mat else None
-            } for r in results]
+            readings_list = []
+            for r in results:
+                readings_list.append({
+                    "id": r.id,
+                    "sens_name": r.sens_name,
+                    "sens_id": r.sens_id,
+                    "temp": r.temp,
+                    "humi": r.humi,
+                    "carb": r.carb,
+                    "dateserver": r.dateserver.isoformat() if r.dateserver else None,
+                    "thermo_mat": json.loads(r.thermo_mat) if r.thermo_mat else None,
+                    "temp_soil": (
+                        sum(val for row in json.loads(r.thermo_mat) for val in row) / 
+                        len([val for row in json.loads(r.thermo_mat) for val in row])
+                        if r.thermo_mat else None
+                    )
+                })
 
             return jsonify(readings_list), 200
 
