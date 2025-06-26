@@ -2,8 +2,11 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 import json
+import pytz
 
 db = SQLAlchemy()
+
+tz = pytz.timezone('America/Sao_Paulo')
 
 class Reading(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -12,7 +15,7 @@ class Reading(db.Model):
     temp = db.Column(db.Integer)  # Celsius *100
     humi = db.Column(db.Integer)  # Umidade *100
     carb = db.Column(db.Integer)  # CO2 em ppm 
-    dateserver = db.Column(db.DateTime(), default=datetime.now)
+    dateserver = db.Column(db.DateTime(), default=lambda: datetime.now(tz))
     thermo_mat = db.Column(db.Text)  # Matriz 8x8 serializada como JSON
 
     def __init__(self, sens_id, temp, humi, carb, sens_name, thermo_mat=None):

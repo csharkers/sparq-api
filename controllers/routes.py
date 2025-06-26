@@ -61,7 +61,8 @@ def init_app(app):
                 "temp": r.temp,
                 "humi": r.humi,
                 "carb": r.carb,
-                "dateserver": r.dateserver.isoformat() if r.dateserver else None
+                "dateserver": r.dateserver.isoformat() if r.dateserver else None,
+                "thermo_mat": json.loads(r.thermo_mat) if r.thermo_mat else None
             } for r in results]
 
             return jsonify(readings_list), 200
