@@ -67,7 +67,7 @@ def init_app(app):
                     "dateserver": r.dateserver.isoformat() if r.dateserver else None,
                     "thermo_mat": json.loads(r.thermo_mat) if r.thermo_mat else None,
                     "temp_soil": (
-                        (lambda t: sum(t) / len(t) if t else None)(json.loads(r.thermo_mat))
+                        (lambda t: max(t) if t else None)(json.loads(r.thermo_mat))
                         if r.thermo_mat else None
                     )
                 })
